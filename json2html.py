@@ -10,11 +10,15 @@ def _getParList():
 
 def _toHTML(parList):
     html = ET.Element('_')
+    ul = ET.Element('ul')
+    html.append(ul)
     
     for el in parList:
+        li = ET.Element('li')
+        ul.append(li)
         for k, v in el.items():
             html_el = ET.Element(k)
-            html.append(html_el)
+            li.append(html_el)
             html_el.text = v
     
     return ET.tostring(html, encoding="unicode", method="html")[3:][:-4] # remove '<_>' and '</_>'
