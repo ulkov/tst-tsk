@@ -1,6 +1,7 @@
 import json
 from collections import OrderedDict
 import xml.etree.ElementTree as ET
+import re
 
 
 def _getParList(fname):
@@ -21,7 +22,7 @@ def _toHTML(parList):
                 renderObj(el, li)
         else:
             for k, v in obj.items():
-                html_el = ET.Element(k)
+                html_el = _createEl(k)
                 parentEl.append(html_el)
                 if isinstance(v, list):
                     renderObj(v, html_el)
@@ -31,6 +32,23 @@ def _toHTML(parList):
     renderObj(parList, html)
     
     return ET.tostring(html, encoding="unicode", method="html")[3:][:-4] # remove '<_>' and '</_>'
+
+
+def _createEl(src):
+    attrib = {}
+    cls = []
+    for a in re.findall('[\#\.][_a-zA-Z0-9-]*', src):
+        if a.startswith('.'):
+            cls.append(a[1:])
+        elif a.startswith('#'):
+            attrib['id'] = a[1:]
+    if cls:
+        attrib['class'] = ' '.join(cls)
+    
+    tag = re.split('[\#\.]', src)[0]
+    
+    return ET.Element(tag, attrib=attrib)
+
 
 
 def getHTML(fname='source.json'):
@@ -50,3 +68,4 @@ def getHTML(fname='source.json'):
 if __name__ == '__main__':
     print(getHTML())
     print(getHTML('source2.json'))
+    print(getHTML('source3.json'))
