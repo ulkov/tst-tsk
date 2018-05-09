@@ -3,30 +3,39 @@ from collections import OrderedDict
 import xml.etree.ElementTree as ET
 
 
-def _getParList():
-    with open('source.json', 'rt', encoding='utf-8') as f:
+def _getParList(fname):
+    with open(fname, 'rt', encoding='utf-8') as f:
         return json.loads(f.read(), object_pairs_hook=OrderedDict)
 
 
 def _toHTML(parList):
     html = ET.Element('_')
-    ul = ET.Element('ul')
-    html.append(ul)
     
-    for el in parList:
-        li = ET.Element('li')
-        ul.append(li)
-        for k, v in el.items():
-            html_el = ET.Element(k)
-            li.append(html_el)
-            html_el.text = v
+    def renderObj(obj, parentEl):
+        if isinstance(obj, list):
+            ul = ET.Element('ul')
+            parentEl.append(ul)
+            for el in obj:
+                li = ET.Element('li')
+                ul.append(li)
+                renderObj(el, li)
+        else:
+            for k, v in obj.items():
+                html_el = ET.Element(k)
+                parentEl.append(html_el)
+                if isinstance(v, list):
+                    renderObj(v, html_el)
+                else:
+                    html_el.text = v
+    
+    renderObj(parList, html)
     
     return ET.tostring(html, encoding="unicode", method="html")[3:][:-4] # remove '<_>' and '</_>'
 
 
-def getHTML():
+def getHTML(fname='source.json'):
     try:
-        parList = _getParList()
+        parList = _getParList(fname)
     except Exception as ex:
         return 'can not get paragraph list. error: %s' % ex
     
@@ -40,3 +49,4 @@ def getHTML():
 
 if __name__ == '__main__':
     print(getHTML())
+    print(getHTML('source2.json'))
