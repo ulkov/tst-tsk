@@ -1,24 +1,22 @@
 import json
+from collections import OrderedDict
 import xml.etree.ElementTree as ET
 
 
 def _getParList():
     with open('source.json', 'rt', encoding='utf-8') as f:
-        return json.loads(f.read())
+        return json.loads(f.read(), object_pairs_hook=OrderedDict)
 
 
 def _toHTML(parList):
     html = ET.Element('_')
     
     for el in parList:
-        h1 = ET.Element('h1')
-        html.append(h1)
-        h1.text = el['title']
-        
-        p = ET.Element('p')
-        html.append(p)
-        p.text = el['body']
-        
+        for k, v in el.items():
+            html_el = ET.Element(k)
+            html.append(html_el)
+            html_el.text = v
+    
     return ET.tostring(html, encoding="unicode", method="html")[3:][:-4] # remove '<_>' and '</_>'
 
 
